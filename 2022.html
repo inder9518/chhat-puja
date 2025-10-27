@@ -85,7 +85,6 @@
     .close-btn:hover {
       background: #b02a37;
     }
-
   </style>
 </head>
 
@@ -99,7 +98,7 @@
   <!-- Info Box -->
   <div class="info-box">
     <h5>Welcome!</h5>
-    <p>Click any photo to view it or press <b>Download</b> to save it directly without Drive.</p>
+    <p>Click any photo to view it or press <b>Download</b> to save it directly (no refresh needed).</p>
   </div>
 
   <!-- Gallery -->
@@ -173,45 +172,45 @@
       });
     }
 
-    // ✅ Reliable Direct Download Function
+    // ✅ Permanent Fix for Download (no refresh)
     async function directDownload(file, event) {
       const btn = event.target;
       const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
 
-      try {
-        btn.disabled = true;
-        btn.textContent = "Downloading...";
+      btn.disabled = true;
+      btn.textContent = "Downloading...";
 
-        // Fetch image blob
-        const response = await fetch(imgUrl, { cache: "no-cache" });
-        if (!response.ok) throw new Error("Failed to fetch");
+      try {
+        const response = await fetch(imgUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error("Download failed");
 
         const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
+        const blobUrl = URL.createObjectURL(blob);
 
-        // Create a hidden download link
+        // New <a> element each time — prevents stale event issues
         const a = document.createElement("a");
         a.href = blobUrl;
-        a.download = file.name.endsWith(".jpg") ? file.name : file.name + ".jpg";
+        a.download = file.name.endsWith(".jpg") ? file.name : `${file.name}.jpg`;
         document.body.appendChild(a);
         a.click();
 
-        // Clean up
+        // Small delay to ensure completion before revoke
         setTimeout(() => {
-          window.URL.revokeObjectURL(blobUrl);
+          URL.revokeObjectURL(blobUrl);
           a.remove();
           btn.disabled = false;
           btn.textContent = "Download";
-        }, 1000);
+        }, 1500);
+
       } catch (err) {
         console.error(err);
-        alert("❌ Download failed or cancelled");
+        alert("❌ Download cancelled or failed.");
         btn.disabled = false;
         btn.textContent = "Download";
       }
     }
 
-    // ✅ Open Preview (only Close button)
+    // ✅ Open Preview
     function openPreview(file) {
       previewImg.src = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
       previewOverlay.style.display = "flex";
@@ -222,20 +221,20 @@
       previewImg.src = "";
     });
 
-    // ✅ Load Photos on Start
+    // ✅ Load Photos
     async function loadPhotos() {
       try {
         updateStatus("Loading photos...");
         const files = await listImageFilesInFolder(FOLDER_ID, nextPageToken);
         if (!files.length) {
-          updateStatus("No more photos found.");
+          updateStatus("No photos found.");
           return;
         }
         renderFiles(files);
         updateStatus("");
       } catch (err) {
         console.error(err);
-        updateStatus("⚠️ Error loading photos. Check API or Folder settings.");
+        updateStatus("⚠️ Error loading photos.");
       }
     }
 
