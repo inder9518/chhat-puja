@@ -14,7 +14,7 @@
       color: #333;
     }
 
-    /* Curved Header with Menu */
+    /* Curved Header */
     .curved-header {
       background: linear-gradient(135deg, #4e73df, #1cc88a);
       color: white;
@@ -75,8 +75,11 @@
       width: 100%;
       height: auto;
       border-radius: 12px;
-      display: block;
-      margin: 0 auto;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .photo-card img:hover {
+      transform: scale(1.03);
     }
     .photo-title {
       font-size: 0.9rem;
@@ -87,14 +90,52 @@
     }
     #loadMoreBtn { display: none; }
 
+    /* Fullscreen Image Preview */
+    .preview-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      flex-direction: column;
+    }
+    .preview-overlay img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    }
+    .preview-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    .preview-buttons a,
+    .close-btn {
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .close-btn {
+      background: #dc3545;
+      color: #fff;
+    }
+    .close-btn:hover { background: #b02a37; }
+    .download-btn {
+      background: #28a745;
+      color: #fff;
+    }
+    .download-btn:hover { background: #218838; }
+
     /* Responsive Menu */
     @media (max-width: 600px) {
-      .logo-container img {
-        height: 35px;
-      }
-      .menu-toggle {
-        display: block;
-      }
+      .logo-container img { height: 35px; }
+      .menu-toggle { display: block; }
       nav {
         display: none;
         position: absolute;
@@ -107,18 +148,14 @@
         padding: 10px 0;
       }
       nav.open { display: block; }
-      nav a {
-        display: block;
-        margin: 8px 10px;
-        background: rgba(255,255,255,0.2);
-      }
+      nav a { display: block; margin: 8px 10px; background: rgba(255,255,255,0.2); }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ✅ New Header -->
+  <!-- ✅ Header -->
   <header class="curved-header">
     <div class="header-content">
       <div class="logo-container">
@@ -136,7 +173,7 @@
   <!-- Info Box -->
   <div class="info-box">
     <h4>Your Lovely Photos ❤️</h4>
-    <p>Below are the synced photos directly from Google Drive. You can view or download them anytime.</p>
+    <p>Below are the synced photos directly from Google Drive. Click on any photo to view or download it.</p>
   </div>
 
   <!-- Gallery -->
@@ -148,16 +185,23 @@
     </div>
   </div>
 
+  <!-- ✅ Fullscreen Preview -->
+  <div class="preview-overlay" id="previewOverlay">
+    <img id="previewImg" src="" alt="Preview">
+    <div class="preview-buttons">
+      <a id="downloadBtn" class="download-btn" download>Download</a>
+      <button class="close-btn" id="closePreview">Close</button>
+    </div>
+  </div>
+
   <script>
     // ✅ Mobile Menu Toggle
     const menuToggle = document.getElementById("menuToggle");
     const mainNav = document.getElementById("mainNav");
-    if (menuToggle && mainNav) {
-      menuToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
-      mainNav.querySelectorAll("a").forEach(link =>
-        link.addEventListener("click", () => mainNav.classList.remove("open"))
-      );
-    }
+    menuToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
+    mainNav.querySelectorAll("a").forEach(link =>
+      link.addEventListener("click", () => mainNav.classList.remove("open"))
+    );
 
     // ✅ Google Drive Gallery Code
     const API_KEY = "AIzaSyA8oxF_zeYV6WM3_qElJ3g5l5_opbJn120";
@@ -169,13 +213,18 @@
     let nextPageToken = null;
     const PAGE_SIZE = 20;
 
+    const previewOverlay = document.getElementById("previewOverlay");
+    const previewImg = document.getElementById("previewImg");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const closePreview = document.getElementById("closePreview");
+
     function updateStatus(msg) {
       statusEl.textContent = msg;
     }
 
     async function listImageFilesInFolder(folderId, pageToken = null) {
       const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
-      let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType,webViewLink)&key=${API_KEY}`;
+      let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
       if (pageToken) url += `&pageToken=${pageToken}`;
       const r = await fetch(url);
       if (!r.ok) throw new Error("Drive API request failed: " + r.status);
@@ -196,6 +245,8 @@
         img.src = `https://lh3.googleusercontent.com/d/${f.id}=w1000`;
         img.alt = f.name;
 
+        img.addEventListener("click", () => openPreview(f));
+
         const title = document.createElement("div");
         title.className = "photo-title";
         title.textContent = f.name;
@@ -209,11 +260,10 @@
         dlBtn.href = `https://drive.google.com/uc?export=download&id=${f.id}`;
         dlBtn.download = f.name;
 
-        const viewBtn = document.createElement("a");
+        const viewBtn = document.createElement("button");
         viewBtn.className = "btn btn-sm btn-outline-secondary";
         viewBtn.textContent = "Open";
-        viewBtn.href = f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`;
-        viewBtn.target = "_blank";
+        viewBtn.addEventListener("click", () => openPreview(f));
 
         btnGroup.appendChild(dlBtn);
         btnGroup.appendChild(viewBtn);
@@ -224,6 +274,18 @@
         gallery.appendChild(col);
       });
     }
+
+    function openPreview(file) {
+      const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
+      previewImg.src = imgUrl;
+      downloadBtn.href = `https://drive.google.com/uc?export=download&id=${file.id}`;
+      previewOverlay.style.display = "flex";
+    }
+
+    closePreview.addEventListener("click", () => {
+      previewOverlay.style.display = "none";
+      previewImg.src = "";
+    });
 
     async function loadPhotos() {
       try {
@@ -236,11 +298,7 @@
         }
         updateStatus("");
         renderFiles(files);
-        if (nextPageToken) {
-          loadMoreBtn.style.display = "inline-block";
-        } else {
-          loadMoreBtn.style.display = "none";
-        }
+        loadMoreBtn.style.display = nextPageToken ? "inline-block" : "none";
       } catch (e) {
         console.error(e);
         updateStatus("❌ Error: Check API key, folder ID, and make sure folder is Public.");
