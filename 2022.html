@@ -94,7 +94,7 @@
     .preview-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.9);
       display: none;
       justify-content: center;
       align-items: center;
@@ -107,30 +107,17 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(255,255,255,0.2);
     }
-    .preview-buttons {
-      margin-top: 20px;
-      display: flex;
-      gap: 15px;
-    }
-    .preview-buttons a,
     .close-btn {
-      padding: 10px 20px;
+      margin-top: 20px;
+      padding: 10px 25px;
       border-radius: 30px;
       border: none;
       cursor: pointer;
       font-weight: 600;
-      text-decoration: none;
-    }
-    .close-btn {
       background: #dc3545;
       color: #fff;
     }
     .close-btn:hover { background: #b02a37; }
-    .download-btn {
-      background: #28a745;
-      color: #fff;
-    }
-    .download-btn:hover { background: #218838; }
 
     /* Responsive Menu */
     @media (max-width: 600px) {
@@ -185,13 +172,10 @@
     </div>
   </div>
 
-  <!-- ✅ Fullscreen Preview -->
+  <!-- ✅ Fullscreen Preview (Only Close Button) -->
   <div class="preview-overlay" id="previewOverlay">
     <img id="previewImg" src="" alt="Preview">
-    <div class="preview-buttons">
-      <a id="downloadBtn" class="download-btn" download>Download</a>
-      <button class="close-btn" id="closePreview">Close</button>
-    </div>
+    <button class="close-btn" id="closePreview">Close</button>
   </div>
 
 <script>
@@ -224,9 +208,7 @@
   // ✅ List Images
   async function listImageFilesInFolder(folderId, pageToken = null) {
     const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
-    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(
-      q
-    )}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
+    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
     if (pageToken) url += `&pageToken=${pageToken}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error("Drive API request failed: " + r.status);
@@ -256,7 +238,7 @@
       const btnGroup = document.createElement("div");
       btnGroup.className = "d-flex justify-content-center gap-2 mt-2";
 
-      // ✅ Direct Download Button (no Drive link)
+      // ✅ Direct Download Button (cancel-safe)
       const dlBtn = document.createElement("button");
       dlBtn.className = "btn btn-sm btn-primary";
       dlBtn.textContent = "Download";
@@ -278,27 +260,39 @@
     });
   }
 
-  // ✅ Direct download using fetch + blob
+  // ✅ Direct download (cancel-safe version)
   async function directDownload(file) {
     const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
     try {
+      const buttons = document.querySelectorAll("button");
+      buttons.forEach(b => b.disabled = true);
+
       const response = await fetch(imgUrl);
+      if (!response.ok) throw new Error("Fetch failed");
+
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = file.name;
       document.body.appendChild(a);
       a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        a.remove();
+        buttons.forEach(b => b.disabled = false);
+      }, 2000);
     } catch (e) {
-      alert("❌ Download failed. Try again or check API access.");
+      alert("❌ Download failed or cancelled.");
       console.error(e);
+      const buttons = document.querySelectorAll("button");
+      buttons.forEach(b => b.disabled = false);
     }
   }
 
-  // ✅ Open Fullscreen Preview (with only Close button)
+  // ✅ Open Fullscreen Preview (Only Close)
   function openPreview(file) {
     const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
     previewImg.src = imgUrl;
