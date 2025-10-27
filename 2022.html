@@ -221,7 +221,7 @@
     statusEl.textContent = msg;
   }
 
-  // ✅ List images from folder
+  // ✅ List Images
   async function listImageFilesInFolder(folderId, pageToken = null) {
     const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
     let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
@@ -233,7 +233,7 @@
     return data.files;
   }
 
-  // ✅ Render files in gallery
+  // ✅ Render Files
   function renderFiles(files) {
     files.forEach(f => {
       const col = document.createElement("div");
@@ -258,14 +258,10 @@
       const dlBtn = document.createElement("a");
       dlBtn.className = "btn btn-sm btn-primary";
       dlBtn.textContent = "Download";
-      dlBtn.href = `https://lh3.googleusercontent.com/d/${f.id}=w2000`;
-      dlBtn.setAttribute("download", f.name);
-      dlBtn.addEventListener("click", e => {
-        e.preventDefault();
-        forceDownload(`https://lh3.googleusercontent.com/d/${f.id}=w2000`, f.name);
-      });
+      dlBtn.href = `https://drive.google.com/uc?export=download&id=${f.id}`;
+      dlBtn.download = f.name;
 
-      // ✅ Open Preview Button
+      // ✅ Open Button (preview)
       const viewBtn = document.createElement("button");
       viewBtn.className = "btn btn-sm btn-outline-secondary";
       viewBtn.textContent = "Open";
@@ -281,33 +277,20 @@
     });
   }
 
-  // ✅ Open fullscreen preview (only close button shown)
+  // ✅ Open Fullscreen Preview (with only Close button)
   function openPreview(file) {
     const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
     previewImg.src = imgUrl;
     previewOverlay.style.display = "flex";
   }
 
-  // ✅ Close preview
+  // ✅ Close Preview
   closePreview.addEventListener("click", () => {
     previewOverlay.style.display = "none";
     previewImg.src = "";
   });
 
-  // ✅ Force direct download (works on all devices)
-  function forceDownload(url, filename) {
-    fetch(url)
-      .then(resp => resp.blob())
-      .then(blob => {
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-      })
-      .catch(() => alert("Download failed, please try again."));
-  }
-
-  // ✅ Load photos
+  // ✅ Load Photos
   async function loadPhotos() {
     try {
       updateStatus("Loading photos...");
@@ -326,7 +309,6 @@
     }
   }
 
-  // ✅ Initialize
   window.onload = () => {
     loadPhotos();
     loadMoreBtn.addEventListener("click", loadPhotos);
