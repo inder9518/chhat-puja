@@ -224,7 +224,9 @@
   // ✅ List Images
   async function listImageFilesInFolder(folderId, pageToken = null) {
     const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
-    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
+    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(
+      q
+    )}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
     if (pageToken) url += `&pageToken=${pageToken}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error("Drive API request failed: " + r.status);
@@ -233,9 +235,9 @@
     return data.files;
   }
 
-  // ✅ Render Files
+  // ✅ Render Gallery
   function renderFiles(files) {
-    files.forEach(f => {
+    files.forEach((f) => {
       const col = document.createElement("div");
       col.className = "col-12 col-sm-6 col-md-4 col-lg-3";
 
@@ -254,14 +256,13 @@
       const btnGroup = document.createElement("div");
       btnGroup.className = "d-flex justify-content-center gap-2 mt-2";
 
-      // ✅ Direct Download Button
-      const dlBtn = document.createElement("a");
+      // ✅ Direct Download Button (no Drive link)
+      const dlBtn = document.createElement("button");
       dlBtn.className = "btn btn-sm btn-primary";
       dlBtn.textContent = "Download";
-      dlBtn.href = `https://drive.google.com/uc?export=download&id=${f.id}`;
-      dlBtn.download = f.name;
+      dlBtn.addEventListener("click", () => directDownload(f));
 
-      // ✅ Open Button (preview)
+      // ✅ Open Button
       const viewBtn = document.createElement("button");
       viewBtn.className = "btn btn-sm btn-outline-secondary";
       viewBtn.textContent = "Open";
@@ -275,6 +276,26 @@
       col.appendChild(card);
       gallery.appendChild(col);
     });
+  }
+
+  // ✅ Direct download using fetch + blob
+  async function directDownload(file) {
+    const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
+    try {
+      const response = await fetch(imgUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("❌ Download failed. Try again or check API access.");
+      console.error(e);
+    }
   }
 
   // ✅ Open Fullscreen Preview (with only Close button)
@@ -314,5 +335,6 @@
     loadMoreBtn.addEventListener("click", loadPhotos);
   };
 </script>
+
 </body>
 </html>
