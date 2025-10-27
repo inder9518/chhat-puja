@@ -12,36 +12,29 @@ body { background: #f8f9fa; margin: 0; font-family: -apple-system, BlinkMacSyste
 /* Curved Header */
 .curved-header {
   background: linear-gradient(135deg, #4e73df, #1cc88a);
-  color: white;
-  padding: 20px;
-  margin: 15px;
-  border-radius: 25px;
+  color: white; padding: 20px; margin: 15px; border-radius: 25px;
 }
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
+.header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
 .logo-container img { height: 60px; }
 .menu-toggle { display: none; background: none; border: none; color: white; font-size: 26px; cursor: pointer; }
-nav a {
-  color: white; text-decoration: none; padding: 8px 15px;
-  background-color: rgba(255,255,255,0.15); border-radius: 5px; margin: 0 5px; font-weight: 500;
-  transition: background-color 0.2s ease;
-}
+nav a { color: white; text-decoration: none; padding: 8px 15px; background-color: rgba(255,255,255,0.15); border-radius: 5px; margin: 0 5px; font-weight: 500; transition: background-color 0.2s ease; }
 nav a:hover { background-color: rgba(255,255,255,0.3); }
 
 /* Info Box */
-.info-box {
-  background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 20px; margin: 20px auto; max-width: 900px; text-align: center;
-}
+.info-box { background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; margin: 20px auto; max-width: 900px; text-align: center; }
 
 /* Gallery */
 .photo-card { border: none; background: transparent; text-align: center; }
-.photo-card img { width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto; }
+.photo-card img { width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto; cursor: pointer; transition: transform 0.3s ease; }
+.photo-card img:hover { transform: scale(1.05); }
 .photo-title { font-size: 0.9rem; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Fullscreen Preview */
+.preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 9999; }
+.preview-overlay img { max-width: 90%; max-height: 80vh; border-radius: 10px; }
+.close-btn { background: #dc3545; color: #fff; border: none; padding: 10px 25px; border-radius: 30px; margin-top: 20px; cursor: pointer; font-weight: 600; }
+.close-btn:hover { background: #b02a37; }
+
 #loadMoreBtn { display: none; }
 
 /* Responsive Menu */
@@ -72,7 +65,7 @@ nav a:hover { background-color: rgba(255,255,255,0.3); }
 
 <div class="info-box">
   <h4>Your Lovely Photos ❤️</h4>
-  <p>Below are the synced photos directly from Google Drive. You can view or download them anytime.</p>
+  <p>Click any photo to view in fullscreen. Download will refresh the page automatically.</p>
 </div>
 
 <div class="container">
@@ -83,14 +76,18 @@ nav a:hover { background-color: rgba(255,255,255,0.3); }
   </div>
 </div>
 
+<!-- Fullscreen Preview -->
+<div class="preview-overlay" id="previewOverlay">
+  <img id="previewImg" src="" alt="Preview">
+  <button class="close-btn" id="closePreview">Close</button>
+</div>
+
 <script>
 // Mobile menu toggle
 const menuToggle = document.getElementById("menuToggle");
 const mainNav = document.getElementById("mainNav");
 menuToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
-mainNav.querySelectorAll("a").forEach(link =>
-  link.addEventListener("click", () => mainNav.classList.remove("open"))
-);
+mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", () => mainNav.classList.remove("open")));
 
 // Google Drive Gallery
 const API_KEY = "AIzaSyA8oxF_zeYV6WM3_qElJ3g5l5_opbJn120";
@@ -101,11 +98,15 @@ const gallery = document.getElementById("gallery");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 let nextPageToken = null;
 
+const previewOverlay = document.getElementById("previewOverlay");
+const previewImg = document.getElementById("previewImg");
+const closePreview = document.getElementById("closePreview");
+
 function updateStatus(msg){ statusEl.textContent = msg; }
 
 async function listImageFilesInFolder(folderId, pageToken = null){
   const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
-  let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType,webViewLink)&key=${API_KEY}`;
+  let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,webViewLink)&key=${API_KEY}`;
   if(pageToken) url += `&pageToken=${pageToken}`;
   const r = await fetch(url);
   if(!r.ok) throw new Error("Drive API request failed: "+r.status);
@@ -118,54 +119,64 @@ function renderFiles(files){
   files.forEach(f=>{
     const col = document.createElement("div");
     col.className="col-12 col-sm-6 col-md-4 col-lg-3";
-    const card=document.createElement("div");
+    const card = document.createElement("div");
     card.className="photo-card";
 
-    const img=document.createElement("img");
-    img.src=`https://lh3.googleusercontent.com/d/${f.id}=w1000`;
-    img.alt=f.name;
+    const img = document.createElement("img");
+    img.src = `https://lh3.googleusercontent.com/d/${f.id}=w1000`;
+    img.alt = f.name;
+    img.addEventListener("click", ()=> openPreview(f));
 
-    const title=document.createElement("div");
-    title.className="photo-title";
-    title.textContent=f.name;
+    const title = document.createElement("div");
+    title.className = "photo-title";
+    title.textContent = f.name;
 
-    const btnGroup=document.createElement("div");
-    btnGroup.className="d-flex justify-content-center gap-2 mt-2";
+    const dlBtn = document.createElement("a");
+    dlBtn.className = "btn btn-sm btn-primary mt-2";
+    dlBtn.textContent = "Download";
+    dlBtn.href = `https://drive.google.com/uc?export=download&id=${f.id}`;
+    dlBtn.download = f.name;
+    dlBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      const link = document.createElement("a");
+      link.href = dlBtn.href;
+      link.download = f.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(()=>{ location.reload(); }, 500); // refresh after download
+    });
 
-    const dlBtn=document.createElement("a");
-    dlBtn.className="btn btn-sm btn-primary";
-    dlBtn.textContent="Download";
-    dlBtn.href=`https://drive.google.com/uc?export=download&id=${f.id}`;
-    dlBtn.download=f.name;
-
-    const viewBtn=document.createElement("a");
-    viewBtn.className="btn btn-sm btn-outline-secondary";
-    viewBtn.textContent="Open";
-    viewBtn.href=f.webViewLink||`https://drive.google.com/file/d/${f.id}/view`;
-    viewBtn.target="_blank";
-
-    btnGroup.appendChild(dlBtn);
-    btnGroup.appendChild(viewBtn);
     card.appendChild(img);
     card.appendChild(title);
-    card.appendChild(btnGroup);
+    card.appendChild(dlBtn);
     col.appendChild(card);
     gallery.appendChild(col);
   });
 }
 
+// Fullscreen preview functions
+function openPreview(file){
+  previewImg.src = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
+  previewOverlay.style.display = "flex";
+}
+closePreview.addEventListener("click", ()=>{
+  previewOverlay.style.display = "none";
+  previewImg.src = "";
+});
+
 async function loadPhotos(){
   try{
     updateStatus("Loading photos...");
-    const files = await listImageFilesInFolder(FOLDER_ID,nextPageToken);
+    const files = await listImageFilesInFolder(FOLDER_ID, nextPageToken);
     if(!files||files.length===0){
       updateStatus("No more images found.");
-      loadMoreBtn.style.display="none";
+      loadMoreBtn.style.display = "none";
       return;
     }
     updateStatus("");
     renderFiles(files);
-    loadMoreBtn.style.display=nextPageToken?"inline-block":"none";
+    loadMoreBtn.style.display = nextPageToken?"inline-block":"none";
   }catch(e){
     console.error(e);
     updateStatus("❌ Error: Check API key, folder ID, and make sure folder is Public.");
@@ -177,6 +188,5 @@ window.onload=()=>{
   loadMoreBtn.addEventListener("click", loadPhotos);
 };
 </script>
-
 </body>
 </html>
