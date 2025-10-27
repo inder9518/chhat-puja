@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABOUT US</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    /* --- Curved Header --- */
+    .curved-header {
+      background-color: #4a90e2;
+      color: white;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 15px;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      flex-wrap: wrap;
+    }
+
+    .logo-container img {
+      height: 70px;
+    }
+
+    .header-content nav {
+      display: block;
+    }
+
+    .header-content nav a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      display: inline-block;
+      background-color: #357abd;
+      border-radius: 5px;
+      font-weight: bold;
+      margin: 0 5px;
+      transition: background-color 0.2s ease;
+    }
+
+    .header-content nav a:hover {
+      background-color: #2a649a;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    /* --- About Section --- */
+    .about-section {
+      margin: 30px 50px;
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    /* ✅ FULL PHOTO visible without cropping */
+    .about-photo {
+      display: block;
+      width: 100%;
+      height: auto;            /* Auto height based on image ratio */
+      max-height: 100vh;       /* Avoid extra long scroll */
+      object-fit: contain;     /* Show full image without crop */
+      background-color: #000;  /* Optional black background behind image edges */
+    }
+
+    .info-box {
+      padding: 25px;
+      text-align: center;
+      background-color: #eaf2fd;
+      border-top: 5px solid #4a90e2;
+    }
+
+    .info-box h2 {
+      color: #357abd;
+      margin-bottom: 10px;
+    }
+
+    .info-box p {
+      line-height: 1.7;
+      font-size: 1em;
+      color: #444;
+      margin: 10px 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 15px;
+      margin: 20px;
+      font-size: 0.9em;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 600px) {
+      .curved-header {
+        margin: 10px;
+        padding: 15px 10px;
+      }
+
+      .header-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0;
+      }
+
+      .logo-container img {
+        height: 30px;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .header-content nav {
+        display: none;
+        position: absolute;
+        top: 70px;
+        left: 10px;
+        right: 10px;
+        background-color: #4a90e2;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+        padding: 10px 0;
+      }
+
+      .header-content nav.open {
+        display: block;
+      }
+
+      .header-content nav a {
+        display: block;
+        margin: 5px 10px;
+        padding: 10px;
+        width: auto;
+        text-align: left;
+        background-color: #357abd;
+        font-size: 1em;
+      }
+
+      .about-section {
+        margin: 10px;
+      }
+
+      .info-box {
+        padding: 15px;
+      }
+
+      footer {
+        margin: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="curved-header">
+    <div class="header-content">
+      <div class="logo-container">
+        <img src="LOGO.png" alt="My Website Logo">
+      </div>
+
+      <button class="menu-toggle" id="menuToggle">☰</button>
+
+      <nav id="mainNav">
+        <a href="HOME.html">HOME</a>
+        <a href="ABOUT.HTML">ABOUT US</a>
+        <a href="#">CONTACT US</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="about-section">
+    <!-- 🔹 अपनी 873x1280 वाली फोटो यहां लगाएं -->
+    <img src="ABOUTUSPHOTO.jpg" alt="About Us Photo" class="about-photo">
+
+    <div class="info-box">
+      <h2>About Our Chhath Puja</h2>
+      <p>Gurugram Chhath Puja ek aisi parampara hai jahan hum har saal milkar Chhathi Maiya aur Surya Devta ka aashirvad prapt karte hain. Yeh parv hum sabko ekta aur shraddha ka sandesh deta hai.</p>
+      <p>Har saal kai bhakt aur parivar is pavitra utsav mein bhaag lete hain, jahan hum bhajan, aarti, aur prasadam ke madhyam se apni bhakti pradarshit karte hain. Aapka swagat hai humare parivar mein!</p>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Chhat Puja Photos. All rights reserved.
+  </footer>
+
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const mainNav = document.getElementById('mainNav');
+
+    if (menuToggle && mainNav) {
+      menuToggle.addEventListener('click', () => {
+        mainNav.classList.toggle('open');
+      });
+      const navLinks = mainNav.querySelectorAll('a');
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          mainNav.classList.remove('open');
+        });
+      });
+    }
+  </script>
+</body>
+</html>
