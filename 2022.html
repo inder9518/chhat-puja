@@ -94,7 +94,7 @@
     .preview-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.85);
       display: none;
       justify-content: center;
       align-items: center;
@@ -107,15 +107,17 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(255,255,255,0.2);
     }
-    .close-btn {
+    .preview-buttons {
       margin-top: 20px;
-      padding: 10px 25px;
-      border-radius: 30px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
+    }
+    .close-btn {
       background: #dc3545;
       color: #fff;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 600;
     }
     .close-btn:hover { background: #b02a37; }
 
@@ -160,7 +162,7 @@
   <!-- Info Box -->
   <div class="info-box">
     <h4>Your Lovely Photos ❤️</h4>
-    <p>Below are the synced photos directly from Google Drive. Click on any photo to view or download it.</p>
+    <p>Click any photo to view it or download directly — no Drive link required.</p>
   </div>
 
   <!-- Gallery -->
@@ -172,163 +174,169 @@
     </div>
   </div>
 
-  <!-- ✅ Fullscreen Preview (Only Close Button) -->
+  <!-- ✅ Fullscreen Preview -->
   <div class="preview-overlay" id="previewOverlay">
     <img id="previewImg" src="" alt="Preview">
-    <button class="close-btn" id="closePreview">Close</button>
+    <div class="preview-buttons">
+      <button class="close-btn" id="closePreview">Close</button>
+    </div>
   </div>
 
-<script>
-  // ✅ Mobile Menu Toggle
-  const menuToggle = document.getElementById("menuToggle");
-  const mainNav = document.getElementById("mainNav");
-  menuToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
-  mainNav.querySelectorAll("a").forEach(link =>
-    link.addEventListener("click", () => mainNav.classList.remove("open"))
-  );
+  <script>
+    // ✅ Mobile Menu Toggle
+    const menuToggle = document.getElementById("menuToggle");
+    const mainNav = document.getElementById("mainNav");
+    menuToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
+    mainNav.querySelectorAll("a").forEach(link =>
+      link.addEventListener("click", () => mainNav.classList.remove("open"))
+    );
 
-  // ✅ Google Drive API Info
-  const API_KEY = "AIzaSyA8oxF_zeYV6WM3_qElJ3g5l5_opbJn120";
-  const FOLDER_ID = "1DSBzdPxdeudDWEpXcvXnn7FwJ8LW4Nc2";
+    // ✅ Google Drive API Info
+    const API_KEY = "AIzaSyA8oxF_zeYV6WM3_qElJ3g5l5_opbJn120";
+    const FOLDER_ID = "1DSBzdPxdeudDWEpXcvXnn7FwJ8LW4Nc2";
 
-  const statusEl = document.getElementById("status");
-  const gallery = document.getElementById("gallery");
-  const loadMoreBtn = document.getElementById("loadMoreBtn");
-  let nextPageToken = null;
-  const PAGE_SIZE = 20;
+    const statusEl = document.getElementById("status");
+    const gallery = document.getElementById("gallery");
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    let nextPageToken = null;
+    const PAGE_SIZE = 20;
 
-  const previewOverlay = document.getElementById("previewOverlay");
-  const previewImg = document.getElementById("previewImg");
-  const closePreview = document.getElementById("closePreview");
+    const previewOverlay = document.getElementById("previewOverlay");
+    const previewImg = document.getElementById("previewImg");
+    const closePreview = document.getElementById("closePreview");
 
-  function updateStatus(msg) {
-    statusEl.textContent = msg;
-  }
-
-  // ✅ List Images
-  async function listImageFilesInFolder(folderId, pageToken = null) {
-    const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
-    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
-    if (pageToken) url += `&pageToken=${pageToken}`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error("Drive API request failed: " + r.status);
-    const data = await r.json();
-    nextPageToken = data.nextPageToken || null;
-    return data.files;
-  }
-
-  // ✅ Render Gallery
-  function renderFiles(files) {
-    files.forEach((f) => {
-      const col = document.createElement("div");
-      col.className = "col-12 col-sm-6 col-md-4 col-lg-3";
-
-      const card = document.createElement("div");
-      card.className = "photo-card";
-
-      const img = document.createElement("img");
-      img.src = `https://lh3.googleusercontent.com/d/${f.id}=w1000`;
-      img.alt = f.name;
-      img.addEventListener("click", () => openPreview(f));
-
-      const title = document.createElement("div");
-      title.className = "photo-title";
-      title.textContent = f.name;
-
-      const btnGroup = document.createElement("div");
-      btnGroup.className = "d-flex justify-content-center gap-2 mt-2";
-
-      // ✅ Direct Download Button (cancel-safe)
-      const dlBtn = document.createElement("button");
-      dlBtn.className = "btn btn-sm btn-primary";
-      dlBtn.textContent = "Download";
-      dlBtn.addEventListener("click", () => directDownload(f));
-
-      // ✅ Open Button
-      const viewBtn = document.createElement("button");
-      viewBtn.className = "btn btn-sm btn-outline-secondary";
-      viewBtn.textContent = "Open";
-      viewBtn.addEventListener("click", () => openPreview(f));
-
-      btnGroup.appendChild(dlBtn);
-      btnGroup.appendChild(viewBtn);
-      card.appendChild(img);
-      card.appendChild(title);
-      card.appendChild(btnGroup);
-      col.appendChild(card);
-      gallery.appendChild(col);
-    });
-  }
-
-  // ✅ Direct download (cancel-safe version)
-  async function directDownload(file) {
-    const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
-    try {
-      const buttons = document.querySelectorAll("button");
-      buttons.forEach(b => b.disabled = true);
-
-      const response = await fetch(imgUrl);
-      if (!response.ok) throw new Error("Fetch failed");
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-        a.remove();
-        buttons.forEach(b => b.disabled = false);
-      }, 2000);
-    } catch (e) {
-      alert("❌ Download failed or cancelled.");
-      console.error(e);
-      const buttons = document.querySelectorAll("button");
-      buttons.forEach(b => b.disabled = false);
+    function updateStatus(msg) {
+      statusEl.textContent = msg;
     }
-  }
 
-  // ✅ Open Fullscreen Preview (Only Close)
-  function openPreview(file) {
-    const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
-    previewImg.src = imgUrl;
-    previewOverlay.style.display = "flex";
-  }
+    // ✅ List Images
+    async function listImageFilesInFolder(folderId, pageToken = null) {
+      const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
+      let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
+      if (pageToken) url += `&pageToken=${pageToken}`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("Drive API request failed: " + r.status);
+      const data = await r.json();
+      nextPageToken = data.nextPageToken || null;
+      return data.files;
+    }
 
-  // ✅ Close Preview
-  closePreview.addEventListener("click", () => {
-    previewOverlay.style.display = "none";
-    previewImg.src = "";
-  });
+    // ✅ Render Gallery
+    function renderFiles(files) {
+      files.forEach((f) => {
+        const col = document.createElement("div");
+        col.className = "col-12 col-sm-6 col-md-4 col-lg-3";
 
-  // ✅ Load Photos
-  async function loadPhotos() {
-    try {
-      updateStatus("Loading photos...");
-      const files = await listImageFilesInFolder(FOLDER_ID, nextPageToken);
-      if (!files || files.length === 0) {
-        updateStatus("No more images found.");
-        loadMoreBtn.style.display = "none";
-        return;
+        const card = document.createElement("div");
+        card.className = "photo-card";
+
+        const img = document.createElement("img");
+        img.src = `https://lh3.googleusercontent.com/d/${f.id}=w1000`;
+        img.alt = f.name;
+        img.addEventListener("click", () => openPreview(f));
+
+        const title = document.createElement("div");
+        title.className = "photo-title";
+        title.textContent = f.name;
+
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "d-flex justify-content-center gap-2 mt-2";
+
+        // ✅ Direct Download Button (no Drive link)
+        const dlBtn = document.createElement("button");
+        dlBtn.className = "btn btn-sm btn-primary";
+        dlBtn.textContent = "Download";
+        dlBtn.addEventListener("click", (event) => directDownload(f, event));
+
+        // ✅ Open Button
+        const viewBtn = document.createElement("button");
+        viewBtn.className = "btn btn-sm btn-outline-secondary";
+        viewBtn.textContent = "Open";
+        viewBtn.addEventListener("click", () => openPreview(f));
+
+        btnGroup.appendChild(dlBtn);
+        btnGroup.appendChild(viewBtn);
+        card.appendChild(img);
+        card.appendChild(title);
+        card.appendChild(btnGroup);
+        col.appendChild(card);
+        gallery.appendChild(col);
+      });
+    }
+
+    // ✅ Direct download (refresh-free + cancel-safe)
+    async function directDownload(file, event) {
+      const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
+
+      try {
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = "Downloading...";
+
+        const response = await fetch(imgUrl);
+        if (!response.ok) throw new Error("Fetch failed");
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+          a.remove();
+          btn.disabled = false;
+          btn.textContent = "Download";
+        }, 1500);
+
+      } catch (e) {
+        console.error(e);
+        alert("❌ Download failed or cancelled.");
+        const btn = event.target;
+        btn.disabled = false;
+        btn.textContent = "Download";
       }
-      updateStatus("");
-      renderFiles(files);
-      loadMoreBtn.style.display = nextPageToken ? "inline-block" : "none";
-    } catch (e) {
-      console.error(e);
-      updateStatus("❌ Error: Check API key, folder ID, and make sure folder is Public.");
     }
-  }
 
-  window.onload = () => {
-    loadPhotos();
-    loadMoreBtn.addEventListener("click", loadPhotos);
-  };
-</script>
+    // ✅ Open Fullscreen Preview (only Close button)
+    function openPreview(file) {
+      const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
+      previewImg.src = imgUrl;
+      previewOverlay.style.display = "flex";
+    }
+
+    // ✅ Close Preview
+    closePreview.addEventListener("click", () => {
+      previewOverlay.style.display = "none";
+      previewImg.src = "";
+    });
+
+    // ✅ Load Photos
+    async function loadPhotos() {
+      try {
+        updateStatus("Loading photos...");
+        const files = await listImageFilesInFolder(FOLDER_ID, nextPageToken);
+        if (!files || files.length === 0) {
+          updateStatus("No more images found.");
+          loadMoreBtn.style.display = "none";
+          return;
+        }
+        updateStatus("");
+        renderFiles(files);
+        loadMoreBtn.style.display = nextPageToken ? "inline-block" : "none";
+      } catch (e) {
+        console.error(e);
+        updateStatus("❌ Error: Check API key, folder ID, and make sure folder is Public.");
+      }
+    }
+
+    window.onload = () => {
+      loadPhotos();
+      loadMoreBtn.addEventListener("click", loadPhotos);
+    };
+  </script>
 
 </body>
 </html>
