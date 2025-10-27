@@ -215,7 +215,6 @@
 
   const previewOverlay = document.getElementById("previewOverlay");
   const previewImg = document.getElementById("previewImg");
-  const downloadBtn = document.getElementById("downloadBtn");
   const closePreview = document.getElementById("closePreview");
 
   function updateStatus(msg) {
@@ -255,7 +254,7 @@
       const btnGroup = document.createElement("div");
       btnGroup.className = "d-flex justify-content-center gap-2 mt-2";
 
-      // ✅ Direct Download (force download, no redirect)
+      // ✅ Direct Download Button
       const dlBtn = document.createElement("a");
       dlBtn.className = "btn btn-sm btn-primary";
       dlBtn.textContent = "Download";
@@ -266,7 +265,7 @@
         forceDownload(`https://lh3.googleusercontent.com/d/${f.id}=w2000`, f.name);
       });
 
-      // ✅ Open photo in fullscreen
+      // ✅ Open Preview Button
       const viewBtn = document.createElement("button");
       viewBtn.className = "btn btn-sm btn-outline-secondary";
       viewBtn.textContent = "Open";
@@ -282,12 +281,10 @@
     });
   }
 
-  // ✅ Open fullscreen preview
+  // ✅ Open fullscreen preview (only close button shown)
   function openPreview(file) {
     const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
     previewImg.src = imgUrl;
-    downloadBtn.href = imgUrl;
-    downloadBtn.setAttribute("download", file.name);
     previewOverlay.style.display = "flex";
   }
 
@@ -335,6 +332,5 @@
     loadMoreBtn.addEventListener("click", loadPhotos);
   };
 </script>
-
 </body>
 </html>
