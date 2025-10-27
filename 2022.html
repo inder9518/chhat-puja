@@ -203,7 +203,7 @@
     link.addEventListener("click", () => mainNav.classList.remove("open"))
   );
 
-  // ✅ Google Drive Gallery Code
+  // ✅ Google Drive API Info
   const API_KEY = "AIzaSyA8oxF_zeYV6WM3_qElJ3g5l5_opbJn120";
   const FOLDER_ID = "1DSBzdPxdeudDWEpXcvXnn7FwJ8LW4Nc2";
 
@@ -222,6 +222,7 @@
     statusEl.textContent = msg;
   }
 
+  // ✅ List images from folder
   async function listImageFilesInFolder(folderId, pageToken = null) {
     const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
     let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}`;
@@ -233,6 +234,7 @@
     return data.files;
   }
 
+  // ✅ Render files in gallery
   function renderFiles(files) {
     files.forEach(f => {
       const col = document.createElement("div");
@@ -242,7 +244,6 @@
       card.className = "photo-card";
 
       const img = document.createElement("img");
-      // ✅ Direct image preview (high quality)
       img.src = `https://lh3.googleusercontent.com/d/${f.id}=w1000`;
       img.alt = f.name;
       img.addEventListener("click", () => openPreview(f));
@@ -254,13 +255,18 @@
       const btnGroup = document.createElement("div");
       btnGroup.className = "d-flex justify-content-center gap-2 mt-2";
 
-      // ✅ Direct Download Link (no redirect)
+      // ✅ Direct Download (force download, no redirect)
       const dlBtn = document.createElement("a");
       dlBtn.className = "btn btn-sm btn-primary";
       dlBtn.textContent = "Download";
-      dlBtn.href = `https://lh3.googleusercontent.com/d/${f.id}=w2000`; // direct file stream
+      dlBtn.href = `https://lh3.googleusercontent.com/d/${f.id}=w2000`;
       dlBtn.setAttribute("download", f.name);
+      dlBtn.addEventListener("click", e => {
+        e.preventDefault();
+        forceDownload(`https://lh3.googleusercontent.com/d/${f.id}=w2000`, f.name);
+      });
 
+      // ✅ Open photo in fullscreen
       const viewBtn = document.createElement("button");
       viewBtn.className = "btn btn-sm btn-outline-secondary";
       viewBtn.textContent = "Open";
@@ -276,20 +282,35 @@
     });
   }
 
-  // ✅ In-page fullscreen preview
+  // ✅ Open fullscreen preview
   function openPreview(file) {
     const imgUrl = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
     previewImg.src = imgUrl;
-    downloadBtn.href = imgUrl; // direct download from same source
+    downloadBtn.href = imgUrl;
     downloadBtn.setAttribute("download", file.name);
     previewOverlay.style.display = "flex";
   }
 
+  // ✅ Close preview
   closePreview.addEventListener("click", () => {
     previewOverlay.style.display = "none";
     previewImg.src = "";
   });
 
+  // ✅ Force direct download (works on all devices)
+  function forceDownload(url, filename) {
+    fetch(url)
+      .then(resp => resp.blob())
+      .then(blob => {
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+      })
+      .catch(() => alert("Download failed, please try again."));
+  }
+
+  // ✅ Load photos
   async function loadPhotos() {
     try {
       updateStatus("Loading photos...");
@@ -308,10 +329,12 @@
     }
   }
 
+  // ✅ Initialize
   window.onload = () => {
     loadPhotos();
     loadMoreBtn.addEventListener("click", loadPhotos);
   };
 </script>
+
 </body>
 </html>
