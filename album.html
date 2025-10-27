@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOME</title>
+
+    <style>
+        /* General Body Styles */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Four Corner Curved Header */
+        .curved-header {
+            background-color: #4a90e2; 
+            color: white;
+            padding: 20px; 
+            margin: 20px; 
+            border-radius: 15px; 
+        }
+
+        /* Desktop View: Logo Left, Menu Right */
+        .header-content {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 20px; 
+            flex-wrap: wrap; 
+        }
+
+        .logo-container img {
+            height: 70px; 
+        }
+
+        /* Menu Links (Desktop Style) */
+        .header-content nav {
+            display: block; /* डेस्कटॉप पर दिखाएं */
+        }
+        
+        .header-content nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px; 
+            display: inline-block;
+            background-color: #357abd; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            margin: 0 5px; 
+            transition: background-color 0.2s ease;
+        }
+
+        .header-content nav a:hover {
+            background-color: #2a649a; 
+        }
+
+        /* --- Mobile Menu Toggle Button (डेस्कटॉप पर छिपा हुआ) --- */
+        .menu-toggle {
+            display: none; 
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        /* --- Info Box --- */
+        .info-box {
+            background-color: #eaf2fd; 
+            border-left: 5px solid #4a90e2; 
+            margin: 0 50px 20px 50px; 
+            padding: 10px; 
+            border-radius: 8px; 
+            min-height: 100px; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            margin-bottom: 5px; 
+            color: #357abd;
+            font-size: 1.1em; 
+        }
+
+        .info-box p {
+            margin-top: 0;
+            font-size: 0.9em; 
+        }
+
+        /* --- Photo Gallery Cards --- */
+        .gallery-container {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); 
+            gap: 25px; 
+            padding: 20px; 
+            margin: 0 20px 40px 20px; 
+        }
+
+        .gallery-card {
+            background-color: white;
+            border-radius: 10px; 
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); 
+            border-left: 6px solid transparent; 
+            overflow: hidden; 
+            text-align: left; 
+            transition: all 0.4s ease; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column;
+        }
+
+        .gallery-card:nth-child(1) { border-left-color: #4a90e2; } 
+        .gallery-card:nth-child(2) { border-left-color: #33CCFF; } 
+        .gallery-card:nth-child(3) { border-left-color: #FF9933; } 
+        .gallery-card:nth-child(4) { border-left-color: #8A2BE2; } 
+
+        .gallery-card:hover {
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); 
+        }
+
+        .gallery-card img {
+            width: 100%;
+            height: 150px; 
+            object-fit: cover; 
+            transition: transform 0.3s ease; 
+        }
+
+        .gallery-card:hover img {
+            transform: scale(1.05); 
+        }
+
+        .card-content {
+            padding: 15px 20px; 
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+        }
+
+        .card-content h4 {
+            margin: 0 0 8px 0;
+            color: #333; 
+            font-size: 1.3em; 
+            font-weight: 700; 
+        }
+
+        .card-content p {
+            font-size: 0.95em; 
+            color: #555; 
+            line-height: 1.6;
+            margin-bottom: 15px; 
+        }
+
+        .card-button {
+            display: block; 
+            background-color: #4a90e2;
+            color: white;
+            padding: 12px 0; 
+            border-radius: 5px; 
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em; 
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            align-self: flex-start; 
+            width: 100%;
+        }
+
+        .card-button:hover {
+            background-color: #357abd;
+            transform: translateY(-2px); 
+        }
+        
+        /* --- Footer Styles (About Us Code से लिया गया) --- */
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 15px;
+            margin: 20px;
+            font-size: 0.9em;
+        }
+
+
+        /* ---------------------------------- */
+        /* Responsive Design for Mobile Phones */
+        /* ---------------------------------- */
+        @media (max-width: 600px) {
+            .curved-header {
+                margin: 10px; 
+                padding: 15px 10px; 
+            }
+
+            .header-content {
+                flex-direction: row; 
+                justify-content: space-between; 
+                align-items: center;
+                padding: 0; 
+            }
+
+            .logo-container {
+                margin-bottom: 0; 
+            }
+
+            .logo-container img {
+                height: 30px; 
+            }
+            
+            /* मेन्यू बटन दिखाएं */
+            .menu-toggle {
+                display: block; 
+            }
+
+            .header-content nav {
+                /* मेन्यू लिंक छिपाएं (डिफ़ॉल्ट रूप से) */
+                display: none; 
+                position: absolute;
+                top: 70px; 
+                left: 10px;
+                right: 10px;
+                background-color: #4a90e2;
+                border-radius: 5px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                z-index: 100;
+                padding: 10px 0;
+            }
+            
+            /* जब 'open' क्लास लागू हो, तो मेन्यू दिखाएं */
+            .header-content nav.open {
+                display: block; 
+            }
+
+            .header-content nav a {
+                display: block; 
+                margin: 5px 10px; 
+                padding: 10px;
+                width: auto;
+                text-align: left;
+                background-color: #357abd;
+                font-size: 1em;
+            }
+
+            /* बाकी सब वही */
+            .info-box {
+                margin: 0 10px 15px 10px; 
+            }
+            .gallery-container {
+                grid-template-columns: 1fr; 
+                padding: 15px;
+                margin: 0 10px 30px 10px;
+            }
+            .gallery-card img {
+                height: 140px; 
+            }
+            /* फुटर के मार्जिन को मोबाइल के लिए भी एडजस्ट करें */
+            footer {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="curved-header">
+        <div class="header-content">
+            
+            <div class="logo-container">
+                <img src="LOGO.png" alt="My Website Logo">
+            </div>
+            
+            <button class="menu-toggle" id="menuToggle">
+                ☰ 
+            </button>
+
+            <nav id="mainNav">
+                <a href="ABOUT.HTML">ABOUT US</a>
+                <a href="#">CONTACT US</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="info-box">
+        <h3>-:GURUGRAM CHHAT PUJA:-</h3>
+        <p>Har saal ki tarah is baar bhi hum Gurugram mein Chhath Maiya ka pavitra parv bade bhav se manayenge. Aaiye, surya dev aur chhathi maiya se sukh-samriddhi ki prarthana mein humare saath shamil hoiye.</p>
+        <p style="font-weight: bold; margin-top: 10px;">THANK YOU</p>
+    </section>
+
+    
+    <section class="gallery-container">
+        
+        <div class="gallery-card">
+            <img src="generated-image.png" alt="गैलरी इमेज 1">
+            <div class="card-content">
+                <h4>2025</h4>
+                <p>GET YOUR 2025 PHOTOS FROM HERE</p>
+                <a href="2025.html" class="card-button">GO</a>
+            </div>
+        </div>
+
+        <div class="gallery-card">
+            <img src="generated-image.png" alt="गैलरी इमेज 2">
+            <div class="card-content">
+                <h4>2024</h4>
+                <p>GET YOUR 2024 PHOTOS FROM HERE</p>
+                <a href="2024.html" class="card-button">GO</a>
+            </div>
+        </div>
+
+        <div class="gallery-card">
+            <img src="generated-image.png" alt="गैलरी इमेज 3">
+            <div class="card-content">
+                <h4>2023</h4>
+                <p>GET YOUR 2023 PHOTOS FROM HERE</p>
+                <a href="2023.html" class="card-button">GO</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        © 2025 Chhat Puja Photos. All rights reserved.
+    </footer>
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const mainNav = document.getElementById('mainNav');
+
+        if (menuToggle && mainNav) {
+            // मेनू टॉगल करने के लिए 'open' क्लास का उपयोग
+            menuToggle.addEventListener('click', () => {
+                mainNav.classList.toggle('open');
+            });
+            
+            // मेनू में किसी भी लिंक पर क्लिक होने पर मेनू को बंद करना
+            const navLinks = mainNav.querySelectorAll('a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    // लिंक पर क्लिक होते ही 'open' क्लास हटा दें
+                    // जब पेज रीलोड होगा, तो मेनू डिफ़ॉल्ट रूप से बंद (display: none) रहेगा
+                    mainNav.classList.remove('open');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
