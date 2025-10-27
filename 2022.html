@@ -3,203 +3,179 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>My Photo Album</title>
+<title>2023 PHOTOS</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
 <style>
-  body {
-    background: #f8f9fa;
-    margin: 0;
-    font-family: "Poppins", sans-serif;
-  }
+body { background: #f8f9fa; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; }
 
-  header {
-    background: linear-gradient(135deg, #4e73df, #1cc88a);
-    color: white;
-    padding: 20px;
-    border-radius: 0 0 40px 40px;
-    text-align: center;
-  }
+/* Curved Header */
+.curved-header {
+  background: linear-gradient(135deg, #4e73df, #1cc88a);
+  color: white;
+  padding: 20px;
+  margin: 15px;
+  border-radius: 25px;
+}
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.logo-container img { height: 60px; }
+.menu-toggle { display: none; background: none; border: none; color: white; font-size: 26px; cursor: pointer; }
+nav a {
+  color: white; text-decoration: none; padding: 8px 15px;
+  background-color: rgba(255,255,255,0.15); border-radius: 5px; margin: 0 5px; font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+nav a:hover { background-color: rgba(255,255,255,0.3); }
 
-  .info-box {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 900px;
-    text-align: center;
-  }
+/* Info Box */
+.info-box {
+  background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px; margin: 20px auto; max-width: 900px; text-align: center;
+}
 
-  .photo-card {
-    border: none;
-    background: transparent;
-    text-align: center;
-  }
+/* Gallery */
+.photo-card { border: none; background: transparent; text-align: center; }
+.photo-card img { width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto; }
+.photo-title { font-size: 0.9rem; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#loadMoreBtn { display: none; }
 
-  .photo-card img {
-    width: 100%;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-  }
-
-  .photo-card img:hover {
-    transform: scale(1.05);
-  }
-
-  .photo-title {
-    margin-top: 8px;
-    font-size: 14px;
-  }
-
-  /* Fullscreen Preview */
-  .preview-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.9);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    z-index: 9999;
-  }
-
-  .preview-overlay img {
-    max-width: 90%;
-    max-height: 80vh;
-    border-radius: 10px;
-  }
-
-  .close-btn {
-    background: #dc3545;
-    color: #fff;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 30px;
-    margin-top: 20px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-
-  .close-btn:hover {
-    background: #b02a37;
-  }
+/* Responsive Menu */
+@media (max-width: 600px) {
+  .logo-container img { height: 35px; }
+  .menu-toggle { display: block; }
+  nav { display: none; position: absolute; top: 80px; left: 20px; right: 20px; background: #4e73df; border-radius: 10px; z-index: 100; padding: 10px 0; }
+  nav.open { display: block; }
+  nav a { display: block; margin: 8px 10px; background: rgba(255,255,255,0.2); }
+}
 </style>
 </head>
-
 <body>
 
-<header>
-  <h2>📸 My Photo Album</h2>
+<header class="curved-header">
+  <div class="header-content">
+    <div class="logo-container">
+      <img src="LOGO.png" alt="Logo">
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+    <nav id="mainNav">
+      <a href="album.html">HOME</a>
+      <a href="aboutus.html">ABOUT US</a>
+      <a href="contactus.html">CONTACT US</a>
+    </nav>
+  </div>
 </header>
 
 <div class="info-box">
-  <h5>Welcome!</h5>
-  <p>Click any photo to view it or press <b>Download</b> to save it directly from Google Drive.</p>
+  <h4>Your Lovely Photos ❤️</h4>
+  <p>Below are the synced photos directly from Google Drive. You can view or download them anytime.</p>
 </div>
 
 <div class="container">
-  <div id="status" class="text-center text-muted mb-3"></div>
+  <div id="status" class="mb-3 text-center text-muted"></div>
   <div id="gallery" class="row g-3"></div>
-</div>
-
-<div class="preview-overlay" id="previewOverlay">
-  <img id="previewImg" src="" alt="Preview">
-  <button class="close-btn" id="closePreview">Close</button>
+  <div class="text-center mt-3">
+    <button id="loadMoreBtn" class="btn btn-success">Load More</button>
+  </div>
 </div>
 
 <script>
+// Mobile menu toggle
+const menuToggle = document.getElementById("menuToggle");
+const mainNav = document.getElementById("mainNav");
+menuToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
+mainNav.querySelectorAll("a").forEach(link =>
+  link.addEventListener("click", () => mainNav.classList.remove("open"))
+);
+
+// Google Drive Gallery
 const API_KEY = "AIzaSyA8oxF_zeYV6WM3_qElJ3g5l5_opbJn120";
-const FOLDER_ID = "1DSBzdPxdeudDWEpXcvXnn7FwJ8LW4Nc2";
+const FOLDER_ID = "1mCj7fmpogd4-Qvg3AoZbA05I5Lp0gX7u";
 const PAGE_SIZE = 20;
-
-const gallery = document.getElementById("gallery");
 const statusEl = document.getElementById("status");
-const previewOverlay = document.getElementById("previewOverlay");
-const previewImg = document.getElementById("previewImg");
-const closePreview = document.getElementById("closePreview");
-
+const gallery = document.getElementById("gallery");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
 let nextPageToken = null;
 
-function updateStatus(msg) {
-  statusEl.textContent = msg;
-}
+function updateStatus(msg){ statusEl.textContent = msg; }
 
-// Load Photos from Drive
-async function listImageFilesInFolder(folderId, pageToken = null) {
+async function listImageFilesInFolder(folderId, pageToken = null){
   const q = `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`;
-  let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name)&key=${API_KEY}`;
-  if (pageToken) url += `&pageToken=${pageToken}`;
+  let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${PAGE_SIZE}&fields=nextPageToken,files(id,name,mimeType,webViewLink)&key=${API_KEY}`;
+  if(pageToken) url += `&pageToken=${pageToken}`;
   const r = await fetch(url);
-  if (!r.ok) throw new Error("Drive API request failed");
+  if(!r.ok) throw new Error("Drive API request failed: "+r.status);
   const data = await r.json();
   nextPageToken = data.nextPageToken || null;
   return data.files;
 }
 
-// Render Photos
-function renderFiles(files) {
-  files.forEach(f => {
+function renderFiles(files){
+  files.forEach(f=>{
     const col = document.createElement("div");
-    col.className = "col-12 col-sm-6 col-md-4 col-lg-3";
+    col.className="col-12 col-sm-6 col-md-4 col-lg-3";
+    const card=document.createElement("div");
+    card.className="photo-card";
 
-    const card = document.createElement("div");
-    card.className = "photo-card";
+    const img=document.createElement("img");
+    img.src=`https://lh3.googleusercontent.com/d/${f.id}=w1000`;
+    img.alt=f.name;
 
-    const img = document.createElement("img");
-    img.src = `https://lh3.googleusercontent.com/d/${f.id}=w1000`;
-    img.alt = f.name;
-    img.addEventListener("click", () => openPreview(f));
+    const title=document.createElement("div");
+    title.className="photo-title";
+    title.textContent=f.name;
 
-    const title = document.createElement("div");
-    title.className = "photo-title";
-    title.textContent = f.name;
+    const btnGroup=document.createElement("div");
+    btnGroup.className="d-flex justify-content-center gap-2 mt-2";
 
-    // Download Button directly from Google Drive
-    const dlBtn = document.createElement("a");
-    dlBtn.className = "btn btn-sm btn-primary mt-2";
-    dlBtn.textContent = "Download";
-    dlBtn.href = `https://drive.google.com/uc?export=download&id=${f.id}`;
-    dlBtn.setAttribute("download", f.name);
+    const dlBtn=document.createElement("a");
+    dlBtn.className="btn btn-sm btn-primary";
+    dlBtn.textContent="Download";
+    dlBtn.href=`https://drive.google.com/uc?export=download&id=${f.id}`;
+    dlBtn.download=f.name;
 
+    const viewBtn=document.createElement("a");
+    viewBtn.className="btn btn-sm btn-outline-secondary";
+    viewBtn.textContent="Open";
+    viewBtn.href=f.webViewLink||`https://drive.google.com/file/d/${f.id}/view`;
+    viewBtn.target="_blank";
+
+    btnGroup.appendChild(dlBtn);
+    btnGroup.appendChild(viewBtn);
     card.appendChild(img);
     card.appendChild(title);
-    card.appendChild(dlBtn);
+    card.appendChild(btnGroup);
     col.appendChild(card);
     gallery.appendChild(col);
   });
 }
 
-// Open Preview (only Close button)
-function openPreview(file) {
-  previewImg.src = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
-  previewOverlay.style.display = "flex";
-}
-
-closePreview.addEventListener("click", () => {
-  previewOverlay.style.display = "none";
-  previewImg.src = "";
-});
-
-// Load photos initially
-async function loadPhotos() {
-  try {
+async function loadPhotos(){
+  try{
     updateStatus("Loading photos...");
-    const files = await listImageFilesInFolder(FOLDER_ID, nextPageToken);
-    if (!files.length) {
-      updateStatus("No photos found.");
+    const files = await listImageFilesInFolder(FOLDER_ID,nextPageToken);
+    if(!files||files.length===0){
+      updateStatus("No more images found.");
+      loadMoreBtn.style.display="none";
       return;
     }
-    renderFiles(files);
     updateStatus("");
-  } catch (err) {
-    console.error(err);
-    updateStatus("⚠️ Error loading photos.");
+    renderFiles(files);
+    loadMoreBtn.style.display=nextPageToken?"inline-block":"none";
+  }catch(e){
+    console.error(e);
+    updateStatus("❌ Error: Check API key, folder ID, and make sure folder is Public.");
   }
 }
 
-loadPhotos();
+window.onload=()=>{
+  loadPhotos();
+  loadMoreBtn.addEventListener("click", loadPhotos);
+};
 </script>
 
 </body>
