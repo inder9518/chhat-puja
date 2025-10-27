@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    /* Curved Header (same as home page) */
+    .curved-header {
+      background-color: #4a90e2; 
+      color: white;
+      padding: 20px; 
+      margin: 20px; 
+      border-radius: 15px; 
+    }
+
+    .header-content {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 0 20px; 
+      flex-wrap: wrap; 
+    }
+
+    .logo-container img {
+      height: 70px; 
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px; 
+      display: inline-block;
+      background-color: #357abd; 
+      border-radius: 5px; 
+      font-weight: bold; 
+      margin: 0 5px; 
+      transition: background-color 0.2s ease;
+    }
+
+    nav a:hover {
+      background-color: #2a649a; 
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    /* Info Box */
+    .info-box {
+      background-color: #eaf2fd;
+      border-left: 5px solid #4a90e2;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .info-box h3 {
+      margin: 0 0 10px 0;
+      color: #357abd;
+    }
+
+    .info-box p {
+      margin: 0 0 20px 0;
+      font-size: 1em;
+    }
+
+    /* WhatsApp Button */
+    .whatsapp-btn {
+      display: inline-block;
+      background-color: #25D366;
+      color: white;
+      font-size: 1.1em;
+      font-weight: 600;
+      padding: 12px 25px;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .whatsapp-btn:hover {
+      background-color: #1ebe5b;
+      transform: scale(1.05);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 15px;
+      margin: 20px;
+      font-size: 0.9em;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .logo-container img {
+        height: 40px;
+      }
+
+      nav {
+        display: none;
+        position: absolute;
+        top: 70px;
+        left: 10px;
+        right: 10px;
+        background-color: #4a90e2;
+        border-radius: 8px;
+        padding: 10px 0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+
+      nav.open {
+        display: block;
+      }
+
+      nav a {
+        display: block;
+        margin: 5px 10px;
+        background-color: #357abd;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .info-box {
+        margin: 20px 10px;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="curved-header">
+    <div class="header-content">
+      <div class="logo-container">
+        <img src="LOGO.png" alt="Logo">
+      </div>
+
+      <button class="menu-toggle" id="menuToggle">☰</button>
+
+      <nav id="mainNav">
+        <a href="album.html">HOME</a>
+        <a href="ABOUT.HTML">ABOUT US</a>
+        <a href="#">CONTACT</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="info-box">
+    <h3>अगर कोई भी समस्या हो</h3>
+    <p>तो कृपया नीचे दिए गए WhatsApp बटन पर क्लिक करें।<br>
+       हमारा टीम तुरंत आपकी सहायता करेगी।</p>
+
+    <!-- 👇 अपना WhatsApp नंबर यहां डालें (country code के साथ, बिना +) -->
+    <a href="https://wa.me/7982173234?text=Hello%20Sir%2C%20I%20have%20a%20problem." 
+       class="whatsapp-btn" target="_blank">
+      📞 WhatsApp पर संपर्क करें
+    </a>
+  </section>
+
+  <footer>
+    © 2025 Chhat Puja Photos. All rights reserved.
+  </footer>
+
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const mainNav = document.getElementById('mainNav');
+
+    menuToggle.addEventListener('click', () => {
+      mainNav.classList.toggle('open');
+    });
+
+    mainNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => mainNav.classList.remove('open'));
+    });
+  </script>
+
+</body>
+</html>
